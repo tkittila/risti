@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+
 import React, { useState } from 'react'
 
 const Square = (props) => {
@@ -14,28 +14,62 @@ const Board = () => {
   const [xIsNext, setXIsNext] = useState(true)
   const [winner, setWinner] = useState(null)
 
-  setWinner(calculateWinner())
+  let ai = true
   let status = 'Next player '
   status += xIsNext ? 'X' : 'O'
 
   if (winner) {
-    status = 'Winner '
-    status += xIsNext ? 'O' : 'X'
+    if (winner !="tie") { 
+      status = 'Winner '
+      status += xIsNext ? 'O' : 'X'
+    }
+    else status = "Tie"
   }
-
   const handleClick = (i) => {
-    if (winner == null && squares[i] == null) {
+    let win = winner
+    let next = xIsNext
+    let newSquares = squares.slice()
+
+    if (win == null && squares[i] == null) {
       console.log('clik', i, squares, status, xIsNext)
-      const newSquares = squares.slice()
       newSquares[i] = xIsNext ? 'X' : 'O'
-      setSquares(newSquares)
-      setXIsNext(!xIsNext)
+      next = !xIsNext
 
       console.log('clikaft', i, newSquares, status, xIsNext)
+      win = calculateWinner(newSquares)
     }
+
+    if (win === null && ai === true) {
+      let i= newSquares.length
+      let count = 0
+      let empty = []
+
+      while (i--) {
+        if (newSquares[i] === null) {
+          empty.push(i)
+          count++
+        }
+
+      }
+      newSquares[ Math.floor(Math.random()) * count ] = next ? 'X' : 'O'
+      next = !next
+      win = calculateWinner(newSquares)
+      console.log("tyhjiä ",count, empty)
+      
+    }
+
+    setXIsNext(next)
+    setWinner(win)
+    setSquares(newSquares)
   }
 
-  function calculateWinner () {
+  const newGameClick = () => {
+    setSquares(Array(9).fill(null))
+    setWinner(null)
+    setXIsNext(true)
+  }
+
+  function calculateWinner ( x ) {
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -48,10 +82,12 @@ const Board = () => {
     ]
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i]
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a]
+      if (x[a] && x[a] === x[b] && x[a] === x[c]) {
+        return x[a]
       }
     }
+    if (!x.includes(null)) {
+      return "tie"}
     return null
   }
 
@@ -59,26 +95,36 @@ const Board = () => {
     return (<Square value={squares[i]} onClick= {() => handleClick(i)}/>)
   }
 
+  const NewGame = () => {
+    return (
+      <div className="newgame"><button onClick ={ () => newGameClick()}>New game</button></div>
+    )
+  }
+
   console.log('status', status)
   return (
     <div>
       <div>
         <div className="status">{ status }</div>
-        <div className="board-row">
-          {rendSquare(0)}
-          {rendSquare(1)}
-          {rendSquare(2)}
+        <div className="board">
+          <div className="board-row">
+            {rendSquare(0)}
+            {rendSquare(1)}
+            {rendSquare(2)}
+          </div>
+          <div className="board-row">
+            {rendSquare(3)}
+            {rendSquare(4)}
+            {rendSquare(5)}
+          </div>
+          <div className="board-row">
+            {rendSquare(6)}
+            {rendSquare(7)}
+            {rendSquare(8)}
+          </div>
         </div>
-        <div className="board-row">
-          {rendSquare(3)}
-          {rendSquare(4)}
-          {rendSquare(5)}
-        </div>
-        <div className="board-row">
-          {rendSquare(6)}
-          {rendSquare(7)}
-          {rendSquare(8)}
-        </div>
+        <p></p>
+        <NewGame />
       </div>
     </div>
   )
