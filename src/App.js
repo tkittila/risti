@@ -11,6 +11,9 @@ const Square = (props) => {
 
 const Board = () => {
   const [squares, setSquares] = useState(Array(9).fill(null))
+  const [xwins, setxwins] = useState(Array(9).fill(null))
+  const [owins, setowins] = useState(Array(9).fill(null))
+  
   const [xIsNext, setXIsNext] = useState(true)
   const [winner, setWinner] = useState(null)
 
@@ -42,19 +45,38 @@ const Board = () => {
 
     if (win === null && ai === true) {
       let n= newSquares.length
+      let winSquares = Array(9).fill(null)
       let count = 0
       let empty = []
 
       while (n--) {
         if (newSquares[n] === null) {
+          let tmpwin
           empty.push(n)
           count++
+
+          newSquares[n] = next ? 'O' : 'X'
+          winSquares[n] = calculateWinner(newSquares)
+
+          newSquares[n] = next ? 'X' : 'O'
+
+          tmpwin = calculateWinner(newSquares)
+          if (tmpwin!= null) newSquares[n] = tmpwin
+
+          newSquares[n] = null
         }
 
       }
+      console.log("win ",winSquares)
+      n = winSquares.indexOf(next ? 'X' : 'O')
+
+      if ( n === -1) n = winSquares.indexOf(next ? 'O' : 'X')
       
-      n = Math.floor(Math.random() * count)
+      if (n === -1) n = Math.floor(Math.random() * count)
+      
+      
       n = empty[n]
+
       newSquares[ n ] = next ? 'X' : 'O'
       next = !next
       win = calculateWinner(newSquares)
@@ -67,6 +89,7 @@ const Board = () => {
     setSquares(newSquares)
   }
 
+  
   const newGameClick = () => {
     setSquares(Array(9).fill(null))
     setWinner(null)
