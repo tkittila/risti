@@ -14,6 +14,7 @@ const Board = () => {
   const [xIsNext, setXIsNext] = useState(true)
   const [winner, setWinner] = useState(null)
 
+  
   let ai = true
   let status = 'Next player '
   status += xIsNext ? 'X' : 'O'
@@ -40,21 +41,24 @@ const Board = () => {
     }
 
     if (win === null && ai === true) {
-      let i= newSquares.length
+      let n= newSquares.length
       let count = 0
       let empty = []
 
-      while (i--) {
-        if (newSquares[i] === null) {
-          empty.push(i)
+      while (n--) {
+        if (newSquares[n] === null) {
+          empty.push(n)
           count++
         }
 
       }
-      newSquares[ Math.floor(Math.random()) * count ] = next ? 'X' : 'O'
+      
+      n = Math.floor(Math.random() * count)
+      n = empty[n]
+      newSquares[ n ] = next ? 'X' : 'O'
       next = !next
       win = calculateWinner(newSquares)
-      console.log("tyhjiä ",count, empty)
+      console.log("tyhjiä ",count, empty, i)
       
     }
 
