@@ -27,6 +27,39 @@ const Board = () => {
     }
     else status = "Tie"
   }
+
+  
+  
+  const minimax = (node, xNext) =>{
+    
+    const convertValue = (v) => {
+      if ( v == "tie" ) value=0
+      if ( v == 'X' ) value = (xNext ? 1 : -1)
+      if ( v == 'Y' ) value = (xNext ? -1 : 1)
+      return v
+    }
+
+    let value = calculateWinner(node)
+    value = convertValue(value)
+        
+    if ( value !=null ) {
+      return value
+    }
+
+    let n = 9
+    value = (xNext ? -1 : 1)
+      
+    while (n--) {
+      if ( node[n] == null) {
+        node[n] = ( xNext ? 'X' : 'Y' )
+        value = Math.max(value, convertValue(calculateWinner(node, !xNext)))
+        node[n] = null
+      }
+    }        
+    
+    return value
+  }
+
   const handleClick = (i) => {
     if ( squares[i] == null) {
     
@@ -43,25 +76,34 @@ const Board = () => {
         win = calculateWinner(newSquares)
       }
 
+      
+
+
+
       if (win === null && ai === true) {
         let n= newSquares.length
         let winSquares = Array(9).fill(null)
         let count = 0
         let empty = []
         let tmpwin
+        
         while (n--) {
           if (newSquares[n] === null) {
             empty.push(n)
             count++
 
             newSquares[n] = next ? 'O' : 'X'
-            winSquares[n] = calculateWinner(newSquares)
+
+            winSquares[n]=(minimax(newSquares, next))
+              
+/*            winSquares[n] = calculateWinner(newSquares)
 
             newSquares[n] = next ? 'X' : 'O'
 
             tmpwin = calculateWinner(newSquares)
             if (tmpwin != null) winSquares[n] = tmpwin
             newSquares[n] = null
+*/
           }
         }
 
