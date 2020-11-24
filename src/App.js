@@ -33,12 +33,12 @@ const Board = () => {
   const minimax = (node, xNext) =>{
     
     const convertValue = (v) => {
-      if ( v == "tie" ) value=0
-      if ( v == 'X' ) value = (xNext ? 1 : -1)
-      if ( v == 'Y' ) value = (xNext ? -1 : 1)
+      if ( v == "tie" ) v=0
+      if ( v == 'X' ) v = (xNext ? 1 : -1)
+      if ( v == 'O' ) v = (!xNext ? -1 :  1)
       return v
     }
-
+ 
     let value = calculateWinner(node)
     value = convertValue(value)
         
@@ -51,8 +51,10 @@ const Board = () => {
       
     while (n--) {
       if ( node[n] == null) {
-        node[n] = ( xNext ? 'X' : 'Y' )
-        value = Math.max(value, convertValue(calculateWinner(node, !xNext)))
+        node[n] = ( xNext ? 'O' : 'X' )
+        if (xNext) value = Math.max(value, minimax(node, !xNext))
+        if (!xNext) value = Math.min(value, minimax(node, !xNext))
+        
         node[n] = null
       }
     }        
@@ -92,9 +94,11 @@ const Board = () => {
             empty.push(n)
             count++
 
-            newSquares[n] = next ? 'O' : 'X'
+            newSquares[n] = next ? 'X' : 'O'
 
             winSquares[n]=(minimax(newSquares, next))
+
+            newSquares[n] = null
               
 /*            winSquares[n] = calculateWinner(newSquares)
 
@@ -108,15 +112,21 @@ const Board = () => {
         }
 
         console.log("win ",winSquares)
-        n = winSquares.indexOf(next ? 'X' : 'O')
 
-        if ( n === -1) n = winSquares.indexOf(next ? 'O' : 'X')
+        
+        if (next) n = winSquares.indexOf(Math.max(...winSquares))
+        if (!next) n = winSquares.indexOf(Math.min(...winSquares))
+
+        /*
+        n = winSquares.indexOf(next ? 1 : -1)
+
+        if ( n === -1) n = winSquares.indexOf(next ? -1 : 1)
         
         if (n === -1) {
           n = Math.floor(Math.random() * count)
           n = empty[n]
         }
-
+*/
         newSquares[ n ] = next ? 'X' : 'O'
         next = !next
         win = calculateWinner(newSquares)
