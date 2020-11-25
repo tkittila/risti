@@ -30,35 +30,42 @@ const Board = () => {
 
   
   
-  const minimax = (node, xNext) =>{
+  const minimax = (node, xNext, depth) =>{
     
-    const convertValue = (v) => {
-      if ( v == "tie" ) v=0
-      if ( v == 'X' ) v = (xNext ? 1 : -1)
-      if ( v == 'O' ) v = (!xNext ? -1 :  1)
+    const convertValue = (v,d) => {
+      if ( v === "tie" ) v=0
+      if ( v === 'X' ) v = (!xNext ? (1) : (-1))
+      if ( v === 'O' ) v = (xNext ? (-1) :  (1))
       return v
     }
  
     let value = calculateWinner(node)
-    value = convertValue(value)
+    value = convertValue(value, depth)
         
-    if ( value !=null ) {
+    if ( (value !=null) || (depth===0) ) {
+      console.log("terminal value ", value, " d ", depth, xNext )
       return value
     }
 
-    let n = 9
+    let n = 8
     value = (xNext ? -1 : 1)
       
-    while (n--) {
+    while (n>=0) {
       if ( node[n] == null) {
-        node[n] = ( xNext ? 'O' : 'X' )
-        if (xNext) value = Math.max(value, minimax(node, !xNext))
-        if (!xNext) value = Math.min(value, minimax(node, !xNext))
-        
+        node[n] = ( xNext ? 'X' : 'O' )
+        let tmpvalue= minimax(node, !xNext, depth -1)
+        if (xNext) {
+          value = Math.max(value, tmpvalue)
+        } 
+
+        if (!xNext) {
+          value = Math.min(value, tmpvalue)
+        }
         node[n] = null
       }
+      n--
     }        
-    
+    console.log("value ", value, " d ", depth, xNext )
     return value
   }
 
@@ -83,23 +90,22 @@ const Board = () => {
 
 
       if (win === null && ai === true) {
-        let n= newSquares.length
+        let n= newSquares.length -1
         let winSquares = Array(9).fill(null)
         let count = 0
         let empty = []
-        let tmpwin
         
-        while (n--) {
+        while (n>=0) {
           if (newSquares[n] === null) {
             empty.push(n)
             count++
 
-            newSquares[n] = next ? 'X' : 'O'
+//            newSquares[n] = next ? 'X' : 'O'
 
-            winSquares[n]=(minimax(newSquares, next))
+            winSquares[n]=(minimax(newSquares, next,2))
 
-            newSquares[n] = null
-              
+//            newSquares[n] = null
+
 /*            winSquares[n] = calculateWinner(newSquares)
 
             newSquares[n] = next ? 'X' : 'O'
@@ -109,13 +115,15 @@ const Board = () => {
             newSquares[n] = null
 */
           }
+          n--
         }
 
         console.log("win ",winSquares)
 
-        
-        if (next) n = winSquares.indexOf(Math.max(...winSquares))
-        if (!next) n = winSquares.indexOf(Math.min(...winSquares))
+        let max = Math.max(...winSquares)
+        let min = Math.min(...winSquares)
+        if (next) n = winSquares.indexOf(max)
+        if (!next) n = winSquares.indexOf(min)
 
         /*
         n = winSquares.indexOf(next ? 1 : -1)
