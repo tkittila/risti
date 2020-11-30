@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react'
+debugger
 
 const Square = (props) => {
   return (
@@ -27,15 +27,13 @@ const Board = () => {
     }
     else status = "Tie"
   }
-
-  
   
   const minimax = (node, xNext, depth) =>{
     
     const convertValue = (v,d) => {
       if ( v === "tie" ) v=0
-      if ( v === 'X' ) v = (!xNext ? (1) : (-1))
-      if ( v === 'O' ) v = (xNext ? (-1) :  (1))
+      if ( v === 'X' ) v = 1 * depth //(!xNext ? (1) : (-1))
+      if ( v === 'O' ) v = -1 *depth //(xNext ? (-1) :  (1))
       return v
     }
  
@@ -43,29 +41,31 @@ const Board = () => {
     value = convertValue(value, depth)
         
     if ( (value !=null) || (depth===0) ) {
-      console.log("terminal value ", value, " d ", depth, xNext )
       return value
     }
 
     let n = 8
-    value = (xNext ? -1 : 1)
+    
+    value = (xNext ? -Infinity : Infinity)
       
     while (n>=0) {
       if ( node[n] == null) {
         node[n] = ( xNext ? 'X' : 'O' )
         let tmpvalue= minimax(node, !xNext, depth -1)
-        if (xNext) {
-          value = Math.max(value, tmpvalue)
-        } 
+        
+        if (tmpvalue != null) {
+          if (xNext) {
+            value = Math.max(value, tmpvalue)
+          } 
 
-        if (!xNext) {
-          value = Math.min(value, tmpvalue)
+          if (!xNext) {
+            value = Math.min(value, tmpvalue)
+          }
         }
-        node[n] = null
+         node[n] = null
       }
       n--
     }        
-    console.log("value ", value, " d ", depth, xNext )
     return value
   }
 
@@ -85,67 +85,60 @@ const Board = () => {
         win = calculateWinner(newSquares)
       }
 
-      
-
-
-
       if (win === null && ai === true) {
         let n= newSquares.length -1
         let winSquares = Array(9).fill(null)
-        let count = 0
         let empty = []
+        let emptyCount=0
         
         while (n>=0) {
           if (newSquares[n] === null) {
+            emptyCount++
             empty.push(n)
-            count++
-
-//            newSquares[n] = next ? 'X' : 'O'
-
-            winSquares[n]=(minimax(newSquares, next,2))
-
-//            newSquares[n] = null
-
-/*            winSquares[n] = calculateWinner(newSquares)
-
             newSquares[n] = next ? 'X' : 'O'
 
-            tmpwin = calculateWinner(newSquares)
-            if (tmpwin != null) winSquares[n] = tmpwin
+            winSquares[n]=(minimax(newSquares, !next, 7))
+
             newSquares[n] = null
-*/
+
           }
           n--
         }
 
         console.log("win ",winSquares)
 
-        let max = Math.max(...winSquares)
-        let min = Math.min(...winSquares)
-        if (next) n = winSquares.indexOf(max)
-        if (!next) n = winSquares.indexOf(min)
+        let noNullWin = winSquares.filter(nu => nu!=null)
 
-        /*
-        n = winSquares.indexOf(next ? 1 : -1)
-
-        if ( n === -1) n = winSquares.indexOf(next ? -1 : 1)
+        let max = Math.max(...noNullWin)
+        let min = Math.min(...noNullWin)
         
-        if (n === -1) {
-          n = Math.floor(Math.random() * count)
-          n = empty[n]
+        let best = ( next ? max : min )
+        
+        n=8
+        let choise=[]
+        let count = 0
+
+        while (n>=0) {
+          if (winSquares[n] === best) {
+            choise.push(n)
+            count++
+          }
+          n--
         }
-*/
+
+
+
+        n = Math.floor(Math.random() * count)
+        n = choise[n]
+
         newSquares[ n ] = next ? 'X' : 'O'
         next = !next
         win = calculateWinner(newSquares)
-        console.log("tyhjiä ",count, empty, i)
-        
       }
 
       setXIsNext(next)
       setWinner(win)
       setSquares(newSquares)
-
     }
   }
   
