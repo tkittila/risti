@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 debugger
 
 const Square = (props) => {
@@ -14,19 +14,23 @@ const Board = () => {
   
   const [xIsNext, setXIsNext] = useState(true)
   const [winner, setWinner] = useState(null)
+  const [gameOn, setGameOn ] = useState(false)
+  const [aiPlays, setAiPlays] = useState('O')
 
-  
+/*
+  useEffect (() => {
+    
+    let nextplayer = (xIsNext ? 'X' : 'O')
+    if (ai && gameOn && !winner && aiPlays === nextplayer) {
+      doAiMove(squares, xIsNext)
+    }
+    
+  })
+*/
   let ai = true
   let status = 'Next player '
   status += xIsNext ? 'X' : 'O'
 
-  if (winner) {
-    if (winner !=="tie") { 
-      status = 'Winner '
-      status += xIsNext ? 'O' : 'X'
-    }
-    else status = "Tie"
-  }
   
   const minimax = (node, xNext, depth) =>{
     
@@ -83,69 +87,97 @@ const Board = () => {
 
         console.log('clikaft', i, newSquares, status, xIsNext)
         win = calculateWinner(newSquares)
+
+        if (win ) {
+          if (win !=="tie") { 
+            status = 'Winner '
+            status += xIsNext ? 'O' : 'X'
+          }
+          else status = "Tie"
+          setGameOn(false)
+          setWinner(win)
+        }
+      
+        setXIsNext(next)
+        setSquares(newSquares)
+  
       }
 
-      if (win === null && ai === true) {
-        let n= newSquares.length -1
-        let winSquares = Array(9).fill(null)
-        let empty = []
-        let emptyCount=0
-        
-        while (n>=0) {
-          if (newSquares[n] === null) {
-            emptyCount++
-            empty.push(n)
-            newSquares[n] = next ? 'X' : 'O'
-
-            winSquares[n]=(minimax(newSquares, !next, 7))
-
-            newSquares[n] = null
-
-          }
-          n--
-        }
-
-        console.log("win ",winSquares)
-
-        let noNullWin = winSquares.filter(nu => nu!=null)
-
-        let max = Math.max(...noNullWin)
-        let min = Math.min(...noNullWin)
-        
-        let best = ( next ? max : min )
-        
-        n=8
-        let choise=[]
-        let count = 0
-
-        while (n>=0) {
-          if (winSquares[n] === best) {
-            choise.push(n)
-            count++
-          }
-          n--
-        }
-
-
-
-        n = Math.floor(Math.random() * count)
-        n = choise[n]
-
-        newSquares[ n ] = next ? 'X' : 'O'
-        next = !next
-        win = calculateWinner(newSquares)
-      }
-
-      setXIsNext(next)
-      setWinner(win)
-      setSquares(newSquares)
+      if (win === null && ai === true) doAiMove(newSquares, next)      
+  
     }
   }
   
+  const doAiMove = (board, player) => {
+    let n= board.length -1
+    let winSquares = Array(9).fill(null)
+    let empty = []
+    let emptyCount=0
+    let win
+
+    while (n>=0) {
+      if (board[n] === null) {
+        emptyCount++
+        empty.push(n)
+        board[n] = player ? 'X' : 'O'
+
+        winSquares[n]=(minimax(board, !player, 7))
+
+        board[n] = null
+      }
+      n--
+    }
+
+    console.log("win ",winSquares)
+
+    let noNullWin = winSquares.filter(nu => nu!=null)
+
+    let max = Math.max(...noNullWin)
+    let min = Math.min(...noNullWin)
+    
+    let best = ( player ? max : min )
+    
+    n=8
+    let choise=[]
+    let count = 0
+
+    while (n>=0) {
+      if (winSquares[n] === best) {
+        choise.push(n)
+        count++
+      }
+      n--
+    }
+
+    n = Math.floor(Math.random() * count)
+    n = choise[n]
+
+    board[ n ] = player ? 'X' : 'O'
+    player = !player
+    
+    setXIsNext(player)
+    win = calculateWinner(board)
+
+    if (win ) {
+      if (win !=="tie") { 
+        status = 'Winner '
+        status += xIsNext ? 'O' : 'X'
+      }
+      else status = "Tie"
+      setGameOn(false)
+      setWinner(win)
+
+    }
+  }
+ 
+
   const newGameClick = () => {
+    setGameOn(true)
     setSquares(Array(9).fill(null))
     setWinner(null)
     setXIsNext(true)
+    if (aiPlays === 'X') doAiMove(squares, xIsNext)
+    
   }
 
   function calculateWinner ( x ) {
@@ -174,9 +206,16 @@ const Board = () => {
     return (<Square value={squares[i]} onClick= {() => handleClick(i)}/>)
   }
 
+  const aiChange = () => {
+    if (!gameOn) setAiPlays(aiPlays=== 'O' ? 'X' : 'O')
+  }
+
   const NewGame = () => {
     return (
+      <div>
+      <div className="AI" onClick={() => aiChange() }>AI plays <strong>{aiPlays}</strong></div>
       <div className="newgame"><button onClick ={ () => newGameClick()}>New game</button></div>
+      </div>
     )
   }
 
