@@ -16,18 +16,84 @@ const Board = () => {
   const [winner, setWinner] = useState(null)
   const [gameOn, setGameOn ] = useState(false)
   const [aiPlays, setAiPlays] = useState('O')
+  let ai = true
+  
 
-/*
+  
+
   useEffect (() => {
+    const doAiMove = (board, player) => {
+      let n= board.length -1
+      let winSquares = Array(9).fill(null)
+      let empty = []
+      let emptyCount=0
+      let win
+  
+      while (n>=0) {
+        if (board[n] === null) {
+          emptyCount++
+          empty.push(n)
+          board[n] = player ? 'X' : 'O'
+  
+          winSquares[n]=(minimax(board, !player, 7))
+  
+          board[n] = null
+        }
+        n--
+      }
+  
+      console.log("win ",winSquares)
+  
+      let noNullWin = winSquares.filter(nu => nu!=null)
+  
+      let max = Math.max(...noNullWin)
+      let min = Math.min(...noNullWin)
+      
+      let best = ( player ? max : min )
+      
+      n=8
+      let choise=[]
+      let count = 0
+  
+      while (n>=0) {
+        if (winSquares[n] === best) {
+          choise.push(n)
+          count++
+        }
+        n--
+      }
+  
+      n = Math.floor(Math.random() * count)
+      n = choise[n]
+  
+      board[ n ] = player ? 'X' : 'O'
+      player = !player
+      
+      setXIsNext(player)
+      win = calculateWinner(board)
+  
+      if (win ) {
+        if (win !=="tie") { 
+          status = 'Winner '
+          status += xIsNext ? 'O' : 'X'
+        }
+        else status = "Tie"
+        setGameOn(false)
+        setWinner(win)
+  
+      }
+      setSquares(board)
+    }
+  
     
     let nextplayer = (xIsNext ? 'X' : 'O')
     if (ai && gameOn && !winner && aiPlays === nextplayer) {
       doAiMove(squares, xIsNext)
     }
     
-  })
-*/
-  let ai = true
+  }, [xIsNext,ai,aiPlays,gameOn,squares, winner] )
+
+  
   let status = 'Next player '
   status += xIsNext ? 'X' : 'O'
 
@@ -103,72 +169,11 @@ const Board = () => {
   
       }
 
-      if (win === null && ai === true) doAiMove(newSquares, next)      
+//      if (win === null && ai === true) doAiMove(newSquares, next)      
   
     }
   }
   
-  const doAiMove = (board, player) => {
-    let n= board.length -1
-    let winSquares = Array(9).fill(null)
-    let empty = []
-    let emptyCount=0
-    let win
-
-    while (n>=0) {
-      if (board[n] === null) {
-        emptyCount++
-        empty.push(n)
-        board[n] = player ? 'X' : 'O'
-
-        winSquares[n]=(minimax(board, !player, 7))
-
-        board[n] = null
-      }
-      n--
-    }
-
-    console.log("win ",winSquares)
-
-    let noNullWin = winSquares.filter(nu => nu!=null)
-
-    let max = Math.max(...noNullWin)
-    let min = Math.min(...noNullWin)
-    
-    let best = ( player ? max : min )
-    
-    n=8
-    let choise=[]
-    let count = 0
-
-    while (n>=0) {
-      if (winSquares[n] === best) {
-        choise.push(n)
-        count++
-      }
-      n--
-    }
-
-    n = Math.floor(Math.random() * count)
-    n = choise[n]
-
-    board[ n ] = player ? 'X' : 'O'
-    player = !player
-    
-    setXIsNext(player)
-    win = calculateWinner(board)
-
-    if (win ) {
-      if (win !=="tie") { 
-        status = 'Winner '
-        status += xIsNext ? 'O' : 'X'
-      }
-      else status = "Tie"
-      setGameOn(false)
-      setWinner(win)
-
-    }
-  }
  
 
   const newGameClick = () => {
@@ -176,7 +181,6 @@ const Board = () => {
     setSquares(Array(9).fill(null))
     setWinner(null)
     setXIsNext(true)
-    if (aiPlays === 'X') doAiMove(squares, xIsNext)
     
   }
 
