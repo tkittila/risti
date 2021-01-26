@@ -16,8 +16,9 @@ const Board = () => {
   const [winner, setWinner] = useState(null)
   const [gameOn, setGameOn ] = useState(false)
   const [aiPlays, setAiPlays] = useState('O')
+  const [winLine, setWinLine] = useState([null,null,null])
   let ai = true
-  
+  let status 
 
   
 
@@ -28,7 +29,8 @@ const Board = () => {
       let empty = []
       let emptyCount=0
       let win
-  
+      
+
       while (n>=0) {
         if (board[n] === null) {
           emptyCount++
@@ -75,7 +77,7 @@ const Board = () => {
       if (win ) {
         if (win !=="tie") { 
           status = 'Winner '
-          status += xIsNext ? 'O' : 'X'
+          status += winner
         }
         else status = "Tie"
         setGameOn(false)
@@ -91,12 +93,22 @@ const Board = () => {
       doAiMove(squares, xIsNext)
     }
     
-  }, [xIsNext,ai,aiPlays,gameOn,squares, winner] )
+  }, [xIsNext,ai,aiPlays,gameOn,squares, winner, status] )
 
   
-  let status = 'Next player '
-  status += xIsNext ? 'X' : 'O'
+  
 
+  if (winner === null) {
+    status = ''
+  }
+  else {
+    if (winner != 'tie') {
+      status = winner + ' Wins!'
+    }
+    else {
+      status = 'Tie!'
+    }
+  }
   
   const minimax = (node, xNext, depth) =>{
     
@@ -198,6 +210,7 @@ const Board = () => {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i]
       if (x[a] && x[a] === x[b] && x[a] === x[c]) {
+        setWinLine(lines[i])
         return x[a]
       }
     }
