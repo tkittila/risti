@@ -1,9 +1,76 @@
 import React, { useState, useEffect } from 'react'
 debugger
 
+const minimax = (node, xNext, depth) =>{
+    
+  const convertValue = (v,d) => {
+    if ( v === "tie" ) v=0
+    if ( v === 'X' ) v = 1 * depth //(!xNext ? (1) : (-1))
+    if ( v === 'O' ) v = -1 *depth //(xNext ? (-1) :  (1))
+    return v
+  }
+
+  let value = calculateWinner(node)
+  value = value.winner
+  value = convertValue(value, depth)
+      
+  if ( (value !=null) || (depth===0) ) {
+    return value
+  }
+
+  let n = 8
+  
+  value = (xNext ? -Infinity : Infinity)
+    
+  while (n>=0) {
+    if ( node[n] == null) {
+      node[n] = ( xNext ? 'X' : 'O' )
+      let tmpvalue= minimax(node, !xNext, depth -1)
+      
+      if (tmpvalue != null) {
+        if (xNext) {
+          value = Math.max(value, tmpvalue)
+        } 
+
+        if (!xNext) {
+          value = Math.min(value, tmpvalue)
+        }
+      }
+       node[n] = null
+    }
+    n--
+  }        
+  return value
+}
+
+function calculateWinner ( x ) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i]
+    if (x[a] && x[a] === x[b] && x[a] === x[c]) {
+      //setWinLine(lines[i])
+      return { winner: x[a], line: lines[i]}
+    }
+  }
+  if (!x.includes(null)) {
+    return { winner: "tie", line: [null,null,null]}
+  }
+  return { winner: null, line: [null,null,null]}
+}
+
 const Square = (props) => {
+  console.log (props.win)
   return (
-    <button className="square" onClick={() => props.onClick()} >
+    <button  className={ props.win ? "winsquare" : "square" } onClick={() => props.onClick()} >
       {props.value}
     </button>
   )
@@ -11,30 +78,25 @@ const Square = (props) => {
 
 const Board = () => {
   const [squares, setSquares] = useState(Array(9).fill(null))
-  
   const [xIsNext, setXIsNext] = useState(true)
   const [winner, setWinner] = useState(null)
-  const [gameOn, setGameOn ] = useState(false)
+  const [gameOn, setGameOn ] = useState(true)
   const [aiPlays, setAiPlays] = useState('O')
   const [winLine, setWinLine] = useState([null,null,null])
+    
   let ai = true
-  let status 
-
-  
+  let status
 
   useEffect (() => {
     const doAiMove = (board, player) => {
       let n= board.length -1
       let winSquares = Array(9).fill(null)
-      let empty = []
-      let emptyCount=0
+
       let win
       
 
       while (n>=0) {
         if (board[n] === null) {
-          emptyCount++
-          empty.push(n)
           board[n] = player ? 'X' : 'O'
   
           winSquares[n]=(minimax(board, !player, 7))
@@ -74,81 +136,30 @@ const Board = () => {
       setXIsNext(player)
       win = calculateWinner(board)
   
-      if (win ) {
-        if (win !=="tie") { 
-          status = 'Winner '
-          status += winner
-        }
-        else status = "Tie"
+      if (win.winner ) {
         setGameOn(false)
-        setWinner(win)
-  
+        setWinner(win.winner)
+        setWinLine(win.line)
       }
       setSquares(board)
     }
   
-    
     let nextplayer = (xIsNext ? 'X' : 'O')
     if (ai && gameOn && !winner && aiPlays === nextplayer) {
       doAiMove(squares, xIsNext)
     }
-    
-  }, [xIsNext,ai,aiPlays,gameOn,squares, winner, status] )
-
-  
-  
+  }, [xIsNext,ai,aiPlays,gameOn, squares, winner] )
 
   if (winner === null) {
     status = ''
   }
   else {
-    if (winner != 'tie') {
+    if (winner !== 'tie') {
       status = winner + ' Wins!'
     }
     else {
       status = 'Tie!'
     }
-  }
-  
-  const minimax = (node, xNext, depth) =>{
-    
-    const convertValue = (v,d) => {
-      if ( v === "tie" ) v=0
-      if ( v === 'X' ) v = 1 * depth //(!xNext ? (1) : (-1))
-      if ( v === 'O' ) v = -1 *depth //(xNext ? (-1) :  (1))
-      return v
-    }
- 
-    let value = calculateWinner(node)
-    value = convertValue(value, depth)
-        
-    if ( (value !=null) || (depth===0) ) {
-      return value
-    }
-
-    let n = 8
-    
-    value = (xNext ? -Infinity : Infinity)
-      
-    while (n>=0) {
-      if ( node[n] == null) {
-        node[n] = ( xNext ? 'X' : 'O' )
-        let tmpvalue= minimax(node, !xNext, depth -1)
-        
-        if (tmpvalue != null) {
-          if (xNext) {
-            value = Math.max(value, tmpvalue)
-          } 
-
-          if (!xNext) {
-            value = Math.min(value, tmpvalue)
-          }
-        }
-         node[n] = null
-      }
-      n--
-    }        
-    return value
   }
 
   const handleClick = (i) => {
@@ -163,17 +174,17 @@ const Board = () => {
         newSquares[i] = xIsNext ? 'X' : 'O'
         next = !xIsNext
 
-        console.log('clikaft', i, newSquares, status, xIsNext)
+        console.log('clikaft', i, newSquares, status, xIsNext, 'wl ', winLine)
         win = calculateWinner(newSquares)
 
-        if (win ) {
-          if (win !=="tie") { 
+        if (win.winner ) {
+          if (win.winner !=="tie") { 
             status = 'Winner '
             status += xIsNext ? 'O' : 'X'
           }
           else status = "Tie"
           setGameOn(false)
-          setWinner(win)
+          setWinner(win.winner)
         }
       
         setXIsNext(next)
@@ -185,42 +196,19 @@ const Board = () => {
   
     }
   }
-  
- 
 
   const newGameClick = () => {
     setGameOn(true)
     setSquares(Array(9).fill(null))
     setWinner(null)
     setXIsNext(true)
-    
+    setWinLine([null,null,null])
   }
 
-  function calculateWinner ( x ) {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6]
-    ]
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i]
-      if (x[a] && x[a] === x[b] && x[a] === x[c]) {
-        setWinLine(lines[i])
-        return x[a]
-      }
-    }
-    if (!x.includes(null)) {
-      return "tie"}
-    return null
-  }
+
 
   const rendSquare = (i) => {
-    return (<Square value={squares[i]} onClick= {() => handleClick(i)}/>)
+    return (<Square win={ winner !==null && winner !=='tie' && winLine.includes(i) ? true : false } value={squares[i]} onClick= {() => handleClick(i)}/>)
   }
 
   const aiChange = () => {
@@ -240,7 +228,6 @@ const Board = () => {
   return (
     <div>
       <div>
-        <div className="status">{ status }</div>
         <div className="board">
           <div className="board-row">
             {rendSquare(0)}
@@ -257,6 +244,7 @@ const Board = () => {
             {rendSquare(7)}
             {rendSquare(8)}
           </div>
+          <div className="status">{ status }</div>
         </div>
         <p></p>
         <NewGame />
