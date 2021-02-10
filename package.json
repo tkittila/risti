@@ -1,5 +1,6 @@
 {
   "name": "risti",
+  "homepage": "https://arboretum.raahe.fi/tuomo/test/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

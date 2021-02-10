@@ -93,7 +93,6 @@ const Board = () => {
       let winSquares = Array(9).fill(null)
 
       let win
-      
 
       while (n>=0) {
         if (board[n] === null) {
@@ -193,7 +192,6 @@ const Board = () => {
       }
 
 //      if (win === null && ai === true) doAiMove(newSquares, next)      
-  
     }
   }
 
@@ -204,8 +202,6 @@ const Board = () => {
     setXIsNext(true)
     setWinLine([null,null,null])
   }
-
-
 
   const rendSquare = (i) => {
     return (<Square win={ winner !==null && winner !=='tie' && winLine.includes(i) ? true : false } value={squares[i]} onClick= {() => handleClick(i)}/>)
